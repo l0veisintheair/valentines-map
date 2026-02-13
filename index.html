@@ -3,7 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#ff2bb3" />
   <title>Our Valentine Map</title>
+
+  <!-- Fonts (Y2K cute + clean) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Puddles&family=Space+Grotesk:wght@400;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -11,15 +17,34 @@
 </head>
 
 <body>
+  <!-- Passcode gate (cute, not truly secure on static sites) -->
+  <section id="lockScreen" class="lock">
+    <div class="lock__card" role="dialog" aria-label="Enter passcode">
+      <div class="lock__title">💿 VIP ACCESS 💖</div>
+      <div class="lock__sub">Enter the passcode to open the map.</div>
+
+      <div class="lock__row">
+        <input id="passInput" class="lock__input" type="password" inputmode="text" autocomplete="off" placeholder="Passcode…" />
+        <button id="unlockBtn" class="btn btn--hot" type="button">Unlock ✨</button>
+      </div>
+
+      <div id="lockMsg" class="lock__msg" aria-live="polite"></div>
+
+      <div class="lock__tiny">
+        Tip: after you unlock once, it stays unlocked on this device.
+      </div>
+    </div>
+  </section>
+
   <header class="topbar">
     <div class="brand">
       <div class="brand__title">Our Valentine Map</div>
-      <div class="brand__subtitle">Tap a heart-pin</div>
+      <div class="brand__subtitle">tap a heart-pin • read the moment • fall in love again</div>
     </div>
 
     <div class="controls">
       <button id="fitBtn" class="btn btn--ghost" type="button" title="Fit all moments">
-        Fit moments
+        Fit moments 🫧
       </button>
     </div>
   </header>
@@ -30,17 +55,20 @@
     <!-- Y2K overlay tint -->
     <div class="map-tint" aria-hidden="true"></div>
 
+    <!-- Floating sticker charms -->
+    <div id="floaties" class="floaties" aria-hidden="true"></div>
+
     <!-- Space overlay for “Next chapter” -->
     <section id="spaceOverlay" class="space is-hidden" aria-hidden="true">
       <canvas id="stars" class="space__stars"></canvas>
       <div class="space__veil" aria-hidden="true"></div>
 
       <div class="space__card" role="dialog" aria-label="Next chapter">
-        <div class="space__title">Next chapter</div>
+        <div class="space__title">🌌 Next chapter</div>
         <div id="spaceText" class="space__text"></div>
 
         <div class="space__actions">
-          <button id="returnBtn" class="btn" type="button">Return to map</button>
+          <button id="returnBtn" class="btn btn--hot" type="button">Return to map 💖</button>
         </div>
       </div>
     </section>
@@ -48,7 +76,7 @@
 
   <footer class="footer">
     <span class="footer__small">
-      Map data © OpenStreetMap contributors • Tiles by CARTO
+      Map data © OpenStreetMap contributors • Tiles by CARTO • made with 💖
     </span>
   </footer>
 
