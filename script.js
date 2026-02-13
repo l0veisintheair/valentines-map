@@ -1,48 +1,72 @@
 /* =========================================================
-   0) PASSCODE GATE (cute, not truly secure on static sites)
+   0) PASSCODE + LOADER (cute, not real security on static sites)
    ========================================================= */
-const PASSCODE = "iloveyou"; // <- change this to your password
+const PASSCODE = "toes"; // <-- change this
 
-function initLock() {
-  const lock = document.getElementById("lockScreen");
-  const input = document.getElementById("passInput");
-  const btn = document.getElementById("unlockBtn");
-  const msg = document.getElementById("lockMsg");
+const lock = document.getElementById("lockScreen");
+const input = document.getElementById("passInput");
+const unlockBtn = document.getElementById("unlockBtn");
+const lockMsg = document.getElementById("lockMsg");
 
-  const already = localStorage.getItem("valmap_unlocked") === "1";
-  if (already) {
-    lock.classList.add("is-hidden");
+const loader = document.getElementById("loader");
+
+function showLoader() {
+  loader.classList.remove("is-hidden");
+  loader.setAttribute("aria-hidden", "false");
+}
+function hideLoader() {
+  loader.classList.add("is-hidden");
+  loader.setAttribute("aria-hidden", "true");
+}
+
+function hideLock() {
+  lock.classList.add("is-hidden");
+}
+
+function alreadyUnlocked() {
+  return localStorage.getItem("valmap_unlocked") === "1";
+}
+
+function setUnlocked() {
+  localStorage.setItem("valmap_unlocked", "1");
+}
+
+function unlockFlow() {
+  const val = (input.value || "").trim();
+  if (!val) {
+    lockMsg.textContent = "Type it in, babe 💖";
+    return;
+  }
+  if (val !== PASSCODE) {
+    lockMsg.textContent = "Nope 😭 try again ✨";
+    input.select();
     return;
   }
 
-  function unlock() {
-    const val = (input.value || "").trim();
-    if (!val) {
-      msg.textContent = "Type it in, babe 💖";
-      return;
-    }
-    if (val === PASSCODE) {
-      localStorage.setItem("valmap_unlocked", "1");
-      lock.classList.add("is-hidden");
-      msg.textContent = "";
-      // mobile: hide keyboard nicely
-      input.blur();
-    } else {
-      msg.textContent = "Nope 😭 try again (you got this) ✨";
-      input.select();
-    }
-  }
+  setUnlocked();
+  hideLock();
+  input.blur();
 
-  btn.addEventListener("click", unlock);
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") unlock();
-  });
+  // Loader reveal + boot app
+  showLoader();
+  // Allow loader to paint before heavy work
+  requestAnimationFrame(() => bootApp());
 }
 
-initLock();
+unlockBtn.addEventListener("click", unlockFlow);
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") unlockFlow();
+});
+
+// If already unlocked, skip lock and boot immediately
+if (alreadyUnlocked()) {
+  hideLock();
+  showLoader();
+  requestAnimationFrame(() => bootApp());
+}
 
 /* =========================================================
-   1) YOUR MOMENTS (with emoji “vibes”)
+   1) MOMENTS (emoji vibes)
    ========================================================= */
 const moments = [
   { id: "began", title: "Where it all began", emoji: "💘",
@@ -101,42 +125,72 @@ const moments = [
     description: "Seeing my future with you\nMoving forward in time\nWhere I lay in bed with you\nAnd care only that you’re mine",
     lat: -33.91273660179619, lng: 18.421754837036136, zoom: 15, photo: null },
 
-  // Special pin (click -> zoom out -> Milky Way overlay)
   { id: "next", type: "next", title: "Next chapter", emoji: "🌌",
     description: "From here… anywhere.\n\nMeet me in the Milky Way 💫",
     lat: -33.9186, lng: 18.4232 }
 ];
 
 /* =========================================================
-   2) MAP SETUP (mobile friendly)
+   2) BOOT APP (init floaties + map + markers, then hide loader)
    ========================================================= */
-const cartoPositron = L.tileLayer(
-  "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-  {
-    subdomains: "abcd",
-    maxZoom: 20,
-    attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
-  }
-);
+let map = null;
+let stars = null;
+let lastView = null;
 
-const map = L.map("map", {
-  worldCopyJump: true,
-  zoomControl: true,
-  layers: [cartoPositron],
-  tap: true
-});
+function bootApp() {
+  initFloaties();
+  initMapAndPins();
+}
 
-// Fit all normal moments initially
-const normalMoments = moments.filter(m => m.type !== "next");
-const bounds = L.latLngBounds(normalMoments.map(m => [m.lat, m.lng]));
-map.fitBounds(bounds.pad(0.25), { animate: true });
+function initMapAndPins() {
+  const cartoPositron = L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    {
+      subdomains: "abcd",
+      maxZoom: 20,
+      attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+    }
+  );
 
-document.getElementById("fitBtn").addEventListener("click", () => {
-  map.fitBounds(bounds.pad(0.25), { animate: true, duration: 1.2 });
-});
+  map = L.map("map", {
+    worldCopyJump: true,
+    zoomControl: true,
+    layers: [cartoPositron],
+    tap: true
+  });
+
+  // Hide loader when tiles have loaded at least once
+  cartoPositron.once("load", () => hideLoader());
+
+  const normal = moments.filter(m => m.type !== "next");
+  const bounds = L.latLngBounds(normal.map(m => [m.lat, m.lng]));
+  map.fitBounds(bounds.pad(0.25), { animate: true });
+
+  document.getElementById("fitBtn").addEventListener("click", () => {
+    map.fitBounds(bounds.pad(0.25), { animate: true, duration: 1.2 });
+  });
+
+  // markers
+  moments.forEach(m => {
+    const isNext = m.type === "next";
+    const marker = L.marker([m.lat, m.lng], { icon: makeDivIcon(isNext), riseOnHover: true }).addTo(map);
+
+    if (isNext) {
+      marker.on("click", () => triggerNextChapter(m));
+    } else {
+      marker.bindPopup(popupHTML(m), { closeButton: false, maxWidth: 360 });
+
+      marker.on("click", () => {
+        const targetZoom = clamp(m.zoom ?? 13, 2, 18);
+        map.flyTo([m.lat, m.lng], targetZoom, { duration: 1.2 });
+        setTimeout(() => marker.openPopup(), 650);
+      });
+    }
+  });
+}
 
 /* =========================================================
-   3) Y2K FLOATIES (stickers)
+   3) FLOATIES
    ========================================================= */
 function initFloaties() {
   const el = document.getElementById("floaties");
@@ -145,7 +199,7 @@ function initFloaties() {
   const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (prefersReduced) return;
 
-  const emojis = ["💖","✨","💿","🫧","🎀","🦋","💞","🌸","⭐️"];
+  const emojis = ["💖","✨","💿","🫧","🎀","🦋","💞","🌸","⭐️","💘"];
   const count = 18;
 
   for (let i = 0; i < count; i++) {
@@ -153,17 +207,16 @@ function initFloaties() {
     s.textContent = emojis[Math.floor(Math.random() * emojis.length)];
     s.style.left = Math.round(Math.random() * 100) + "%";
     s.style.top = Math.round(60 + Math.random() * 60) + "%";
-    s.style.fontSize = (14 + Math.random() * 12).toFixed(0) + "px";
+    s.style.fontSize = (14 + Math.random() * 14).toFixed(0) + "px";
     s.style.opacity = (0.18 + Math.random() * 0.22).toFixed(2);
     s.style.animationDuration = (10 + Math.random() * 14).toFixed(1) + "s";
     s.style.animationDelay = (-Math.random() * 12).toFixed(1) + "s";
     el.appendChild(s);
   }
 }
-initFloaties();
 
 /* =========================================================
-   4) HEART-PIN ICON + POPUPS (emoji badges)
+   4) ICON + POPUPS
    ========================================================= */
 function heartPinSVG(isNext) {
   return `
@@ -190,9 +243,9 @@ function makeDivIcon(isNext = false) {
   return L.divIcon({
     html: heartPinSVG(isNext),
     className: "",
-    iconSize: [48, 48],
-    iconAnchor: [24, 48],
-    popupAnchor: [0, -46]
+    iconSize: [52, 52],
+    iconAnchor: [26, 52],
+    popupAnchor: [0, -50]
   });
 }
 
@@ -207,19 +260,14 @@ function escapeHTML(str) {
 
 function formatLines(text) {
   const safe = escapeHTML(text ?? "");
-  return safe
-    .split("\n")
-    .map(line => `<span class="line">${line}</span>`)
-    .join("");
+  return safe.split("\n").map(line => `<span class="line">${line}</span>`).join("");
 }
 
 function popupHTML(m) {
   const title = escapeHTML(m.title ?? "");
   const emoji = escapeHTML(m.emoji ?? "💖");
   const desc = formatLines(m.description ?? "");
-  const photo = m.photo
-    ? `<img class="popup-photo" src="${m.photo}" alt="${title} photo" loading="lazy" />`
-    : "";
+  const photo = m.photo ? `<img class="popup-photo" src="${m.photo}" alt="${title} photo" loading="lazy" />` : "";
 
   return `
     <div class="popup">
@@ -239,35 +287,18 @@ function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
 }
 
-/* Add markers */
-moments.forEach(m => {
-  const isNext = m.type === "next";
-  const marker = L.marker([m.lat, m.lng], { icon: makeDivIcon(isNext), riseOnHover: true }).addTo(map);
-
-  if (isNext) {
-    marker.on("click", () => triggerNextChapter(m));
-  } else {
-    marker.bindPopup(popupHTML(m), { closeButton: false, maxWidth: 360 });
-
-    marker.on("click", () => {
-      const targetZoom = clamp(m.zoom ?? 13, 2, 18);
-      map.flyTo([m.lat, m.lng], targetZoom, { duration: 1.2 });
-      setTimeout(() => marker.openPopup(), 650);
-    });
-  }
-});
-
 /* =========================================================
-   5) NEXT CHAPTER: zoom out -> romantic Milky Way overlay
+   5) NEXT CHAPTER (space overlay)
    ========================================================= */
 const spaceOverlay = document.getElementById("spaceOverlay");
 const spaceText = document.getElementById("spaceText");
 const returnBtn = document.getElementById("returnBtn");
 
-let lastView = null;
-let stars = null;
+returnBtn.addEventListener("click", hideSpace);
 
 function triggerNextChapter(m) {
+  if (!map) return;
+
   lastView = { center: map.getCenter(), zoom: map.getZoom() };
   map.closePopup();
 
@@ -286,11 +317,13 @@ function hideSpace() {
   stopStarfield();
   spaceOverlay.classList.add("is-hidden");
   spaceOverlay.setAttribute("aria-hidden", "true");
-  if (lastView) map.flyTo(lastView.center, lastView.zoom, { duration: 1.6 });
+
+  if (map && lastView) {
+    map.flyTo(lastView.center, lastView.zoom, { duration: 1.6 });
+  }
 }
 
-returnBtn.addEventListener("click", hideSpace);
-
+/* Starfield */
 function startStarfield() {
   const canvas = document.getElementById("stars");
   const ctx = canvas.getContext("2d");
@@ -318,7 +351,6 @@ function startStarfield() {
     ctx.fillStyle = "rgba(6,5,12,1)";
     ctx.fillRect(0, 0, state.w, state.h);
 
-    // milky glow band
     const grad = ctx.createLinearGradient(0, state.h * 0.18, state.w, state.h * 0.82);
     grad.addColorStop(0.0, "rgba(255,150,190,0.10)");
     grad.addColorStop(0.48, "rgba(180,160,255,0.14)");
@@ -326,7 +358,6 @@ function startStarfield() {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, state.w, state.h);
 
-    // y2k nebula pops
     const g2 = ctx.createRadialGradient(state.w*0.35, state.h*0.35, 0, state.w*0.35, state.h*0.35, state.w*0.55);
     g2.addColorStop(0, "rgba(255,43,179,0.10)");
     g2.addColorStop(1, "rgba(255,43,179,0)");
@@ -339,7 +370,6 @@ function startStarfield() {
     ctx.fillStyle = g3;
     ctx.fillRect(0, 0, state.w, state.h);
 
-    // stars
     const drift = prefersReduced ? 0 : Math.sin(state.t) * 0.35;
 
     for (const s of state.stars) {
