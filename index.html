@@ -24,7 +24,7 @@
       <div class="lock__sub">Enter the passcode to open the map.</div>
 
       <div class="lock__row">
-        <input id="passInput" class="lock__input" type="password" inputmode="text" autocomplete="off" placeholder="Passcode…" />
+        <input id="passInput" class="lock__input" type="toes" inputmode="text" autocomplete="off" placeholder="Passcode…" />
         <button id="unlockBtn" class="btn btn--hot" type="button">Unlock ✨</button>
       </div>
 
@@ -41,6 +41,25 @@
     <div class="loader__card" role="status" aria-live="polite">
       <div class="loader__title">📟 dialing into love…</div>
       <div class="loader__sub">connecting hearts • syncing memories • loading map</div>
+
+      <!-- animated connecting lines -->
+      <svg class="loader__lines" viewBox="0 0 520 120" aria-hidden="true">
+        <circle class="node" cx="70"  cy="60" r="7"/>
+        <circle class="node" cx="170" cy="32" r="7"/>
+        <circle class="node" cx="250" cy="78" r="7"/>
+        <circle class="node" cx="350" cy="36" r="7"/>
+        <circle class="node" cx="450" cy="64" r="7"/>
+
+        <path class="link glow" d="M70 60 C120 20, 150 20, 170 32" />
+        <path class="link glow" d="M170 32 C210 50, 220 70, 250 78" />
+        <path class="link glow" d="M250 78 C295 85, 320 55, 350 36" />
+        <path class="link glow" d="M350 36 C390 20, 420 36, 450 64" />
+
+        <path class="link data" d="M70 60 C120 20, 150 20, 170 32" />
+        <path class="link data delay1" d="M170 32 C210 50, 220 70, 250 78" />
+        <path class="link data delay2" d="M250 78 C295 85, 320 55, 350 36" />
+        <path class="link data delay3" d="M350 36 C390 20, 420 36, 450 64" />
+      </svg>
 
       <div class="loader__bar" aria-hidden="true">
         <div class="loader__fill"></div>
@@ -59,8 +78,8 @@
     </div>
 
     <div class="controls">
-      <button id="fitBtn" class="btn btn--ghost" type="button" title="Fit all moments">
-        Fit moments 🫧
+      <button id="fitBtn" class="btn btn--ghost" type="button" title="Zoom out to all moments">
+        Zoom out 🫧
       </button>
     </div>
   </header>
