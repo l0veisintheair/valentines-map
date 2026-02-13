@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#ff2bb3" />
   <title>Our Valentine Map</title>
 
-  <!-- Fonts (Y2K cute + clean) -->
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Rubik+Puddles&family=Space+Grotesk:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
 </head>
 
 <body>
-  <!-- Passcode gate (cute, not truly secure on static sites) -->
+  <!-- Passcode gate -->
   <section id="lockScreen" class="lock">
     <div class="lock__card" role="dialog" aria-label="Enter passcode">
       <div class="lock__title">💿 VIP ACCESS 💖</div>
@@ -32,6 +32,22 @@
 
       <div class="lock__tiny">
         Tip: after you unlock once, it stays unlocked on this device.
+      </div>
+    </div>
+  </section>
+
+  <!-- “Dialing into love…” loading screen -->
+  <section id="loader" class="loader is-hidden" aria-hidden="true">
+    <div class="loader__card" role="status" aria-live="polite">
+      <div class="loader__title">📟 dialing into love…</div>
+      <div class="loader__sub">connecting hearts • syncing memories • loading map</div>
+
+      <div class="loader__bar" aria-hidden="true">
+        <div class="loader__fill"></div>
+      </div>
+
+      <div class="loader__dots" aria-hidden="true">
+        <span>💖</span><span>✨</span><span>💿</span><span>🫧</span>
       </div>
     </div>
   </section>
