@@ -49,7 +49,6 @@ function unlockFlow() {
 
   // Loader reveal + boot app
   showLoader();
-  // Allow loader to paint before heavy work
   requestAnimationFrame(() => bootApp());
 }
 
@@ -170,7 +169,6 @@ function initMapAndPins() {
     map.fitBounds(bounds.pad(0.25), { animate: true, duration: 1.2 });
   });
 
-  // markers
   moments.forEach(m => {
     const isNext = m.type === "next";
     const marker = L.marker([m.lat, m.lng], { icon: makeDivIcon(isNext), riseOnHover: true }).addTo(map);
