@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Our Valentine Map</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand__title">Our Valentine Map</div>
+      <div class="brand__subtitle">Tap a heart-pin</div>
+    </div>
+
+    <div class="controls">
+      <button id="fitBtn" class="btn btn--ghost" type="button" title="Fit all moments">
+        Fit moments
+      </button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div id="map" class="map"></div>
+
+    <!-- Y2K overlay tint -->
+    <div class="map-tint" aria-hidden="true"></div>
+
+    <!-- Space overlay for “Next chapter” -->
+    <section id="spaceOverlay" class="space is-hidden" aria-hidden="true">
+      <canvas id="stars" class="space__stars"></canvas>
+      <div class="space__veil" aria-hidden="true"></div>
+
+      <div class="space__card" role="dialog" aria-label="Next chapter">
+        <div class="space__title">Next chapter</div>
+        <div id="spaceText" class="space__text"></div>
+
+        <div class="space__actions">
+          <button id="returnBtn" class="btn" type="button">Return to map</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span class="footer__small">
+      Map data © OpenStreetMap contributors • Tiles by CARTO
+    </span>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="./script.js"></script>
+</body>
+</html>
